@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Statement Categorizer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Expense Statement Categorizer</h1>
+      <p class="subtitle">Upload a bank/account statement PDF to automatically group debit expenses by category.</p>
+
+      <form method="post" enctype="multipart/form-data" class="upload-form">
+        <input type="file" name="statement" accept="application/pdf" required />
+        <button type="submit">Analyze Statement</button>
+      </form>
+
+      {% if error %}
+      <div class="error">{{ error }}</div>
+      {% endif %}
+
+      {% if summary_rows %}
+      <section class="results">
+        <h2>Category Summary</h2>
+        <p><strong>Transactions analyzed:</strong> {{ transaction_count }}</p>
+        <p><strong>Total Spend:</strong> {{ "%.2f"|format(total_expense) }}</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in summary_rows %}
+            <tr>
+              <td>{{ row.category }}</td>
+              <td>{{ "%.2f"|format(row.amount) }}</td>
+              <td>{{ "%.1f"|format(row.percent) }}%</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </section>
+      {% endif %}
+    </main>
+  </body>
+</html>

@@ -6,12 +6,14 @@ from categorizer import categorize_expense
 from parser import parse_statement_pdf
 
 app = Flask(__name__)
+app.config["MAX_CONTENT_LENGTH"] = 10 * 1024 * 1024  # 10MB upload limit
 
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     summary_rows = []
     total_expense = 0.0
+    transaction_count = 0
     error = None
 
     if request.method == "POST":
@@ -22,15 +24,20 @@ def index():
         elif not uploaded_file.filename.lower().endswith(".pdf"):
             error = "Only PDF files are supported."
         else:
-            pdf_bytes = uploaded_file.read()
-            transactions = parse_statement_pdf(pdf_bytes)
+            try:
+                transactions = parse_statement_pdf(uploaded_file.read())
+            except Exception:
+                error = "Could not read this PDF. Please try a text-based statement export."
+                transactions = []
 
-            if not transactions:
+            if not error and not transactions:
                 error = (
-                    "No transactions could be parsed. Ensure your statement has lines like "
+                    "No debit transactions could be parsed. Expected lines like "
                     "'DD/MM/YYYY Description 123.45'."
                 )
-            else:
+
+            if not error:
+                transaction_count = len(transactions)
                 category_totals: dict[str, float] = {}
                 for tx in transactions:
                     category = categorize_expense(tx.description)
@@ -54,6 +61,7 @@ def index():
         "index.html",
         summary_rows=summary_rows,
         total_expense=total_expense,
+        transaction_count=transaction_count,
         error=error,
     )
 

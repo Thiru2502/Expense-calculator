@@ -9,7 +9,7 @@
   <body>
     <main class="container">
       <h1>Expense Statement Categorizer</h1>
-      <p class="subtitle">Upload a bank/account statement PDF to group expenses by category.</p>
+      <p class="subtitle">Upload a bank/account statement PDF to automatically group debit expenses by category.</p>
 
       <form method="post" enctype="multipart/form-data" class="upload-form">
         <input type="file" name="statement" accept="application/pdf" required />
@@ -23,6 +23,7 @@
       {% if summary_rows %}
       <section class="results">
         <h2>Category Summary</h2>
+        <p><strong>Transactions analyzed:</strong> {{ transaction_count }}</p>
         <p><strong>Total Spend:</strong> {{ "%.2f"|format(total_expense) }}</p>
         <table>
           <thead>
